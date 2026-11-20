@@ -8,7 +8,7 @@ from typing import Annotated
 
 from database import engine, Base, get_db
 from models import User
-from security import hash_password
+from security import hash_password, verify_password
 
 load_dotenv()
 
@@ -89,3 +89,58 @@ def register_user(
         status_code=303
     )
 
+
+
+
+@app.get("/login")
+def login_page(request: Request):
+    return templates.TemplateResponse(
+        request=request,
+        name="login.html"
+    )
+
+
+@app.post("/login")
+def login_user(
+    request: Request,
+    email: Annotated[str, Form()],
+    password: Annotated[str, Form()],
+    db=Depends(get_db)
+):
+    user = db.query(User).filter(User.email == email).first()
+
+
+    if not user or not verify_password(password, user.password_hash):
+        return templates.TemplateResponse(
+            request=request,
+            name="login.html",
+            context={"error": "Invalid email or password."}
+        )
+
+    request.session.clear()
+    request.session["user_id"] = user.id
+
+    return RedirectResponse(
+        "/dashboard",
+        status_code=303
+    )
+
+
+@app.get("/dashboard")
+def dashboard(request: Request, db=Depends(get_db)):
+    user_id = request.session.get("user_id")
+
+    if not user_id:
+        return RedirectResponse("/login", status_code=303)
+
+    user = db.query(User).filter(User.id == user_id).first()
+
+    if not user:
+        request.session.clear()
+        return RedirectResponse("/login", status_code=303)
+
+    return templates.TemplateResponse(
+        request=request,
+        name="dashboard.html",
+        context={"user": user}
+    )
