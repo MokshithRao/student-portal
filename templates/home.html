@@ -2,11 +2,35 @@
 
 {% block content %}
 
-<h1>Welcome to Student Portal</h1>
+<section class="hero">
+    <div class="hero-copy">
+        <span class="eyebrow">Student Information System</span>
+        <h1>Welcome to Student Portal</h1>
+        <p>Access your student dashboard, manage your academic profile, and stay connected in one simple workspace.</p>
 
-<p>Please register or login to continue</p>
+        <div class="hero-actions">
+            <a class="button button-primary" href="/register">Create an account</a>
+            <a class="button button-secondary" href="/login">Sign in</a>
+        </div>
+    </div>
 
-<a href="/register">Register</a>
-<a href="/login">Login</a>
+    <div class="hero-panel" aria-label="Student Portal features">
+        <div>
+            <span class="feature-number">01</span>
+            <h2>Simple Access</h2>
+            <p>Securely sign in to your personal portal.</p>
+        </div>
+        <div>
+            <span class="feature-number">02</span>
+            <h2>Student Dashboard</h2>
+            <p>View your account details in a clean workspace.</p>
+        </div>
+        <div>
+            <span class="feature-number">03</span>
+            <h2>Admin Controls</h2>
+            <p>Authorized administrators get dedicated access.</p>
+        </div>
+    </div>
+</section>
 
 {% endblock %}

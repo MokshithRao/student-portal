@@ -2,23 +2,34 @@
 
 {% block content %}
 
-<h1>Portal Login</h1>
+<section class="auth-layout">
+    <div class="auth-card">
+        <div class="card-heading">
+            <span class="eyebrow">Welcome back</span>
+            <h1>Portal Login</h1>
+            <p>Sign in to access your Student Portal.</p>
+        </div>
 
-{% if error %}
-    <p>{{ error }}</p>
-{% endif %}
+        {% if error %}
+            <div class="alert alert-error" role="alert">{{ error }}</div>
+        {% endif %}
 
+        <form class="auth-form" action="/login" method="POST">
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input id="email" type="email" name="email" placeholder="Enter your email" required>
+            </div>
 
-<form action="/login" method="POST">
-    <label>Email</label>
-    <input type="email" name="email" required>
-    <br><br>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input id="password" type="password" name="password" placeholder="Enter your password" required>
+            </div>
 
-    <label>Password:</label>
-    <input type="password" name="password" required>
-    <br><br>
+            <button class="button button-primary button-full" type="submit">Sign in</button>
+        </form>
 
-    <button type="submit">Login</button>
-</form>
+        <p class="auth-switch">New to the portal? <a href="/register">Create an account</a></p>
+    </div>
+</section>
 
 {% endblock %}

@@ -1,25 +1,42 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
     <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Student Portal</title>
+        <link rel="stylesheet" href="{{ url_for('static', path='/css/style.css') }}">
     </head>
 
     <body>
-        <nav>
-            <a href="/">Home</a>
+        <header class="site-header">
+            <nav class="nav-container" aria-label="Primary navigation">
+                <a class="brand" href="/" aria-label="Student Portal home">
+                    <span class="brand-mark">SP</span>
+                    <span>Student Portal</span>
+                </a>
 
-            {% if request.session.get("user_id") %}
-                <a href="/dashboard">Dashboard</a>
-                <a href="/admin">Admin</a>
-            {% else %}
-                <a href="/register">Register</a> |
-                <a href="/login">Login</a>
-            {% endif %}
-        </nav>
+                <div class="nav-links">
+                    <a href="/">Home</a>
 
-        <hr>
+                    {% if request.session.get("user_id") %}
+                        <a href="/dashboard">Dashboard</a>
+                        <a href="/admin">Admin</a>
+                        <a class="nav-button" href="/logout">Logout</a>
+                    {% else %}
+                        <a href="/register">Register</a>
+                        <a class="nav-button" href="/login">Login</a>
+                    {% endif %}
+                </div>
+            </nav>
+        </header>
+
+        <main class="page-shell">
             {% block content %}
             {% endblock %}
-    </body>
+        </main>
 
+        <footer class="site-footer">
+            <p>Student Portal &copy; 2026</p>
+        </footer>
+    </body>
 </html>

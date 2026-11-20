@@ -2,13 +2,37 @@
 
 {% block content %}
 
-<h1>Student Dashboard</h1>
+<section class="dashboard">
+    <div class="dashboard-header">
+        <div>
+            <span class="eyebrow">Student workspace</span>
+            <h1>Student Dashboard</h1>
+        </div>
+        <a class="button button-secondary" href="/logout">Logout</a>
+    </div>
 
-<h3>Welcome, {{ user.name }}!</h3>
+    <div class="profile-card">
+        <div class="profile-avatar" aria-hidden="true">{{ user.name[0] | upper }}</div>
+        <div>
+            <p class="profile-label">Welcome back</p>
+            <h2>{{ user.name }}</h2>
+            <p>{{ user.email }}</p>
+        </div>
+    </div>
 
-<a href="/logout">Logout</a>
-
-<p>You have successfully logged in.</p>
+    <div class="dashboard-grid">
+        <article class="info-card">
+            <span class="card-icon" aria-hidden="true">01</span>
+            <h2>Account status</h2>
+            <p>You have successfully signed in to the Student Portal.</p>
+        </article>
+        <article class="info-card">
+            <span class="card-icon" aria-hidden="true">02</span>
+            <h2>Student access</h2>
+            <p>Your student workspace is ready for use.</p>
+        </article>
+    </div>
+</section>
 
 {% endblock %}
 
