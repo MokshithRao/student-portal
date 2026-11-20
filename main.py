@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request, Form, Depends
+from fastapi import FastAPI, Request, Form, Depends, HTTPException
 from fastapi.templating import Jinja2Templates
 from starlette.middleware.sessions import SessionMiddleware
 from dotenv import load_dotenv
@@ -120,6 +120,9 @@ def login_user(
     request.session.clear()
     request.session["user_id"] = user.id
 
+    if user.role == "admin":
+        return RedirectResponse("/admin", status_code=303)
+
     return RedirectResponse(
         "/dashboard",
         status_code=303
@@ -142,5 +145,44 @@ def dashboard(request: Request, db=Depends(get_db)):
     return templates.TemplateResponse(
         request=request,
         name="dashboard.html",
+        context={"user": user}
+    )
+
+
+
+@app.get("/logout")
+def logout(request: Request):
+    request.session.clear()
+
+    return RedirectResponse(
+        "/login",
+        status_code=303
+    )
+
+
+
+@app.get("/admin")
+def admin_page(request: Request, db=Depends(get_db)):
+
+    user_id = request.session.get("user_id")
+
+    if not user_id:
+        return RedirectResponse("/login", status_code=303)
+
+    user = db.query(User).filter(User.id == user_id).first()
+
+    if not user:
+        request.session.clear()
+        return RedirectResponse("/login", status_code=303)
+
+    if user.role != "admin":
+        raise HTTPException(
+            status_code=403,
+            detail="Access Denied"
+        )
+
+    return templates.TemplateResponse(
+        request=request,
+        name="admin.html",
         context={"user": user}
     )
