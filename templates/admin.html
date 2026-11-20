@@ -2,12 +2,36 @@
 
 {% block content %}
 
-<h1>Admin Dashboard</h1>
+<section class="dashboard">
+    <div class="dashboard-header">
+        <div>
+            <span class="eyebrow">Administration workspace</span>
+            <h1>Admin Dashboard</h1>
+        </div>
+        <a class="button button-secondary" href="/logout">Logout</a>
+    </div>
 
-<h3>Welcome, {{ user.name }}!</h3>
+    <div class="profile-card admin-profile">
+        <div class="profile-avatar" aria-hidden="true">{{ user.name[0] | upper }}</div>
+        <div>
+            <p class="profile-label">Administrator</p>
+            <h2>Welcome, {{ user.name }}</h2>
+            <p>{{ user.email }}</p>
+        </div>
+    </div>
 
-<p>You have administrator access.</p>
-
-<a href="/logout">Logout</a>
+    <div class="dashboard-grid">
+        <article class="info-card">
+            <span class="card-icon" aria-hidden="true">A</span>
+            <h2>Administrative access</h2>
+            <p>You have administrator access to the Student Portal.</p>
+        </article>
+        <article class="info-card">
+            <span class="card-icon" aria-hidden="true">S</span>
+            <h2>Secure session</h2>
+            <p>This dashboard is available only to authorized administrators.</p>
+        </article>
+    </div>
+</section>
 
 {% endblock %}

@@ -4,6 +4,7 @@ from starlette.middleware.sessions import SessionMiddleware
 from dotenv import load_dotenv
 from os import getenv
 from fastapi.responses import RedirectResponse
+from fastapi.staticfiles import StaticFiles
 from typing import Annotated
 
 from database import engine, Base, get_db
@@ -15,6 +16,7 @@ load_dotenv()
 app = FastAPI()
 
 templates = Jinja2Templates(directory="templates")
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 app.add_middleware(
     SessionMiddleware,
