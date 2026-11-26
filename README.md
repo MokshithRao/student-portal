@@ -1,242 +1,170 @@
 # Student Portal
 
-A server-rendered Student Portal built using **FastAPI, Python, SQLAlchemy, SQLite, and Jinja2**. The application implements session-based authentication, secure password hashing, protected routes, and role-based access control for students and administrators.
+A server-rendered student portal built with FastAPI, SQLAlchemy, SQLite, and Jinja2. Students can register, sign in, view and edit their profiles, and upload profile images. Administrators can search for and delete student accounts.
 
 ## Features
 
-### Authentication
+### Student accounts
 
-- Student registration with full name, email, and password.
-- Secure password hashing using Argon2 through `pwdlib`.
-- Login with password verification.
-- Session-based authentication using Starlette `SessionMiddleware`.
-- Logout functionality with session clearing.
+- Public registration creates student accounts only.
+- Email addresses are trimmed and stored in lowercase; duplicate checks are case-insensitive.
+- Passwords must contain at least eight characters and are hashed with `pwdlib`.
+- Session-based login redirects students to their dashboard and administrators to the admin dashboard.
+- Students can view their details and update their name, phone number, course, and optional profile image.
+- Profile images accept JPEG, PNG, and WEBP files up to 2 MB. Replaced images are removed when no other account references them.
 
-### Student Dashboard
+### Administrator tools
 
-- Protected student dashboard.
-- Only authenticated users can access the dashboard.
-- Displays the logged-in user's information.
+- The admin dashboard lists student accounts and shows the total number of registered students.
+- Search matches student names and email addresses. The displayed total remains the count of all students.
+- Administrators can delete student accounts; the search is retained after deletion.
+- Students who try to access the admin dashboard receive HTTP 403.
 
-### Admin Dashboard
+## Technology
 
-- Separate admin dashboard.
-- Role-based access control.
-- Student accounts are restricted from accessing admin routes.
-- Unauthorized student access returns HTTP 403 Forbidden.
+- Python
+- FastAPI and Starlette sessions
+- SQLAlchemy ORM
+- SQLite
+- Jinja2 templates
+- `pwdlib` password hashing
+- HTML and CSS
 
-### Frontend
-
-- Server-rendered HTML using Jinja2 templates.
-- Jinja2 template inheritance.
-- Custom cream, charcoal, and terracotta CSS styling.
-- FastAPI static file handling.
-
-## Technology Stack
-
-| Technology | Purpose |
-| --- | --- |
-| Python | Backend programming |
-| FastAPI | Web framework |
-| SQLAlchemy | ORM and database operations |
-| SQLite | Database |
-| Jinja2 | HTML templating |
-| pwdlib + Argon2 | Password hashing and verification |
-| Starlette SessionMiddleware | Session-based authentication |
-| HTML5 | Frontend structure |
-| CSS3 | Frontend styling |
-
-## Project Structure
+## Project layout
 
 ```text
 student-portal/
-├── static/
-│   └── css/
-│       └── style.css
-├── screenshots/
-├── templates/
-│   ├── base.html
-│   ├── home.html
-│   ├── register.html
-│   ├── login.html
-│   ├── dashboard.html
-│   └── admin.html
-├── main.py
-├── database.py
-├── models.py
-├── security.py
-├── make_admin.py
+├── main.py                 # Routes and application setup
+├── database.py             # SQLite engine, session, and ORM base
+├── models.py               # User model
+├── security.py             # Password hashing and verification
+├── create_admin.py         # Interactive administrator account setup
 ├── requirements.txt
 ├── .env.example
-├── .gitignore
-└── README.md
+├── static/
+│   ├── css/style.css
+│   └── uploads/             # Uploaded profile images
+├── templates/               # Jinja2 pages
+└── screenshots/             # Current application screenshots
 ```
 
-## Installation and Setup
+## Run locally
 
-### 1. Clone the repository
+1. Create and activate a virtual environment:
 
-```bash
-git clone https://github.com/MokshithRao/student-portal.git
-```
+   ```powershell
+   python -m venv venv
+   .\venv\Scripts\Activate.ps1
+   ```
 
-Navigate into the project directory:
+2. Install the project requirements:
 
-```bash
-cd student-portal
-```
+   ```powershell
+   pip install -r requirements.txt
+   ```
 
-### 2. Create a virtual environment
+3. Copy `.env.example` to `.env` and set a private session secret:
 
-```bash
-python -m venv venv
-```
+   ```env
+   DATABASE_URL=sqlite:///./student_portal.db
+   SECRET_KEY=replace_with_a_long_random_value
+   ```
 
-Activate the virtual environment on Windows PowerShell:
+   Generate a secret with:
 
-```powershell
-.\venv\Scripts\Activate.ps1
-```
+   ```powershell
+   python -c "import secrets; print(secrets.token_hex(32))"
+   ```
 
-### 3. Install dependencies
+4. Start the application:
 
-```bash
-pip install -r requirements.txt
-```
+   ```powershell
+   uvicorn main:app --reload
+   ```
 
-### 4. Configure environment variables
+   On startup, `main.py` creates the SQLite database tables if they do not already exist. Open <http://127.0.0.1:8000/>.
 
-Create a `.env` file in the project root using `.env.example` as a reference.
+5. To create an administrator, keep the application running and use a second terminal in the project directory:
 
-```env
-DATABASE_URL=sqlite:///./student_portal.db
-SECRET_KEY=your_random_secret_key
-```
+   ```powershell
+   .\venv\Scripts\Activate.ps1
+   python create_admin.py
+   ```
 
-Generate a secure secret key using:
+   Enter the administrator's name, email, phone, department, and password when prompted. Public registration always creates a student account.
 
-```bash
-python -c "import secrets; print(secrets.token_hex(32))"
-```
+## Application routes
 
-Replace the placeholder with the generated key.
-
-**Important:** Never commit your actual `.env` file or expose your secret key publicly.
-
-### 5. Run the application
-
-```bash
-uvicorn main:app --reload
-```
-
-Open `http://127.0.0.1:8000/` in your browser.
-
-## Application Routes
-
-| Route | Method | Description | Access |
+| Method | Path | Purpose | Access |
 | --- | --- | --- | --- |
-| `/` | GET | Home page | Public |
-| `/register` | GET | Registration page | Public |
-| `/register` | POST | Register a student | Public |
-| `/login` | GET | Login page | Public |
-| `/login` | POST | Authenticate user | Public |
-| `/dashboard` | GET | Student dashboard | Authenticated users |
-| `/admin` | GET | Admin dashboard | Admin only |
-| `/logout` | GET | Logout and clear session | Authenticated users |
+| `GET` | `/` | Home page | Public |
+| `GET` | `/register` | Registration form | Public |
+| `POST` | `/register` | Create a student account | Public |
+| `GET` | `/login` | Login form | Public |
+| `POST` | `/login` | Authenticate and start a session | Public |
+| `GET` | `/dashboard` | View student details | Student |
+| `GET` | `/edit-profile` | Show the profile form | Student |
+| `POST` | `/edit-profile` | Update profile details and optional image | Student |
+| `GET` | `/admin` | View and search student accounts (`?q=...`) | Admin |
+| `POST` | `/admin/students/{student_id}/delete` | Delete a student and retain the search term | Admin |
+| `GET` | `/logout` | Clear the current session | Any visitor |
 
-## Authentication and Authorization
+Unauthenticated requests to protected pages redirect to `/login`. A user with the wrong role receives HTTP 403.
 
-### Registration
+## Database
 
-1. The user submits their name, email, and password.
-2. The backend validates the submitted information.
-3. It checks whether the email is already registered.
-4. The password is hashed using Argon2.
-5. User information is stored in the SQLite database.
-6. New accounts are automatically assigned the `student` role.
-
-### Login
-
-1. The user submits an email and password.
-2. The backend retrieves the user using their email.
-3. The entered password is verified against the stored Argon2 hash.
-4. On successful authentication, the application stores the user's ID in the session.
-5. Users are redirected according to their assigned role.
-
-### Role-Based Access Control
-
-- Students can access the Student Dashboard.
-- Administrators can access the Admin Dashboard.
-- Students attempting to access `/admin` receive HTTP 403 Forbidden.
-- Unauthenticated users are redirected to the login page.
-- Public registration does not allow users to assign themselves an administrator role.
-
-## Database Schema
-
-### Users Table
+The `users` table contains:
 
 | Column | Description |
 | --- | --- |
 | `id` | Primary key |
-| `name` | Full name |
+| `name` | User's name |
 | `email` | Unique email address |
-| `password_hash` | Argon2 password hash |
-| `role` | User role (`student` or `admin`) |
+| `password_hash` | Hashed password |
+| `role` | `student` or `admin` |
+| `phone` | Phone number |
+| `course` | Student course or admin department |
+| `profile_image` | Optional path to a profile image |
+
+The default database URL stores data in `student_portal.db` in the project directory. Keep a backup before manually changing database contents. The database file is excluded from Git.
 
 ## Screenshots
 
-### Home Page
+The screenshots below show the current application pages.
+
+### Home
 
 ![Student Portal home page](screenshots/home.png)
 
-### Student Registration
+### Registration
 
-![Student registration page](screenshots/register.png)
+![Student registration form](screenshots/register.png)
 
-### Student Login
+### Login
 
-![Student login page](screenshots/login.png)
+![Student Portal login form](screenshots/login.png)
 
-### Student Dashboard
+### Student dashboard
 
-![Student dashboard](screenshots/student-dashboard.png)
+![Student dashboard with profile image](screenshots/student-dashboard.png)
 
-### Admin Dashboard
+### Edit profile
 
-![Admin dashboard](screenshots/admin-dashboard.png)
+![Edit profile form](screenshots/edit-profile.png)
 
-### Student Access Restriction for the Admin Route
+### Admin dashboard
 
-When a student is logged in and attempts to access `/admin`, the application returns HTTP 403 Forbidden with `Access Denied`.
+![Admin dashboard with student search and deletion](screenshots/admin-dashboard.png)
 
-![Student blocked from the admin route](screenshots/admin-forbidden.png)
+### Student access restriction
 
-## Security Considerations
+![Student request to the admin route returns HTTP 403](screenshots/admin-forbidden.png)
 
-- Passwords are never stored in plaintext.
-- Argon2 is used for password hashing.
-- Password verification uses `pwdlib`'s verification method.
-- Only the user ID is stored in the session.
-- Session secrets are loaded from environment variables.
-- Public registration assigns the student role by default.
-- Protected routes verify authentication and authorization.
+## Security notes
 
-**Note:** This is an educational project. Additional security measures, including CSRF protection, HTTPS configuration, and a production security review, are required before public deployment.
+- Passwords are hashed; plaintext passwords are not stored.
+- The session secret is read from `.env`. Do not commit `.env` or share its secret.
+- Public registration does not allow assigning the administrator role.
+- The session cookie is configured for local development. Before public deployment, configure HTTPS and review session-cookie settings, CSRF protection, and upload handling for the deployment environment.
 
-## Future Enhancements
-
-- Student profile management.
-- Student CRUD operations.
-- Admin student management.
-- Improved dashboard functionality.
-- Additional input validation and security enhancements.
-
-## Author
-
-**Mokshith Rao**
-
-GitHub: [MokshithRao](https://github.com/MokshithRao)
-
----
-
-Built as a learning project to understand FastAPI, SQLAlchemy ORM, session-based authentication, password security, and role-based access control.
+This is an academic project and is intended for local learning and demonstration.

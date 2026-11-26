@@ -1,38 +1,73 @@
+
 {% extends "base.html" %}
 
 {% block content %}
 
 <section class="dashboard">
+
     <div class="dashboard-header">
         <div>
             <span class="eyebrow">Student workspace</span>
             <h1>Student Dashboard</h1>
         </div>
-        <a class="button button-secondary" href="/logout">Logout</a>
     </div>
 
     <div class="profile-card">
-        <div class="profile-avatar" aria-hidden="true">{{ user.name[0] | upper }}</div>
+
+        <div class="profile-avatar">
+            {% if user.profile_image %}
+                <img
+                    src="{{ user.profile_image }}"
+                    alt="Student Profile Image"
+                >
+            {% else %}
+                {{ user.name[0] | upper }}
+            {% endif %}
+        </div>
+
         <div>
             <p class="profile-label">Welcome back</p>
             <h2>{{ user.name }}</h2>
             <p>{{ user.email }}</p>
         </div>
+
     </div>
 
-    <div class="dashboard-grid">
-        <article class="info-card">
-            <span class="card-icon" aria-hidden="true">01</span>
-            <h2>Account status</h2>
-            <p>You have successfully signed in to the Student Portal.</p>
-        </article>
-        <article class="info-card">
-            <span class="card-icon" aria-hidden="true">02</span>
-            <h2>Student access</h2>
-            <p>Your student workspace is ready for use.</p>
-        </article>
+    <div class="info-card">
+
+        <h2>My Details</h2>
+
+        <div class="form-group">
+            <label>Student ID</label>
+            <p>{{ user.id }}</p>
+        </div>
+
+        <div class="form-group">
+            <label>Full Name</label>
+            <p>{{ user.name }}</p>
+        </div>
+
+        <div class="form-group">
+            <label>Email Address</label>
+            <p>{{ user.email }}</p>
+        </div>
+
+        <div class="form-group">
+            <label>Phone Number</label>
+            <p>{{ user.phone }}</p>
+        </div>
+
+        <div class="form-group">
+            <label>Course</label>
+            <p>{{ user.course }}</p>
+        </div>
+
+        <a href="/edit-profile" class="button button-primary">
+            Edit Profile
+        </a>
+
     </div>
+
 </section>
 
 {% endblock %}
-

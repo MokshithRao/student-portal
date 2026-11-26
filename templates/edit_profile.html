@@ -1,0 +1,89 @@
+
+{% extends "base.html" %}
+
+{% block content %}
+
+<section class="auth-layout">
+    <div class="auth-card">
+
+        <div class="card-heading">
+            <span class="eyebrow">Account Settings</span>
+            <h1>Edit Profile</h1>
+            <p>Update your personal information.</p>
+        </div>
+
+        {% if error %}
+            <div class="alert alert-error" role="alert">
+                {{ error }}
+            </div>
+        {% endif %}
+
+        <form
+            class="auth-form"
+            action="/edit-profile"
+            method="POST"
+            enctype="multipart/form-data"
+        >
+
+            <!-- Full Name -->
+            <div class="form-group">
+                <label for="name">Full Name</label>
+                <input
+                    id="name"
+                    type="text"
+                    name="name"
+                    value="{{ user.name }}"
+                    required
+                >
+            </div>
+
+            <!-- Phone Number -->
+            <div class="form-group">
+                <label for="phone">Phone Number</label>
+                <input
+                    id="phone"
+                    type="tel"
+                    name="phone"
+                    value="{{ user.phone }}"
+                    required
+                >
+            </div>
+
+            <!-- Course -->
+            <div class="form-group">
+                <label for="course">Course</label>
+                <input
+                    id="course"
+                    type="text"
+                    name="course"
+                    value="{{ user.course }}"
+                    required
+                >
+            </div>
+
+            <!-- Profile Image -->
+            <div class="form-group">
+                <label for="profile_image">Profile Image</label>
+                <input
+                    type="file"
+                    id="profile_image"
+                    name="profile_image"
+                    accept="image/png, image/jpeg, image/webp"
+                >
+            </div>
+
+            <!-- Save Changes -->
+            <button class="button button-primary button-full" type="submit">
+                Save Changes
+            </button>
+
+        </form>
+
+        <p class="auth-switch">
+            <a href="/dashboard">Back to Dashboard</a>
+        </p>
+
+    </div>
+</section>
+
+{% endblock %}
