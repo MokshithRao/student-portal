@@ -283,7 +283,12 @@ def logout(request: Request):
     )
 
 
-# Admin page
+
+
+
+
+
+# Admin dashboard
 @app.get("/admin")
 def admin_page(request: Request, db=Depends(get_db)):
 
@@ -292,22 +297,29 @@ def admin_page(request: Request, db=Depends(get_db)):
     if not user_id:
         return RedirectResponse("/login", status_code=303)
 
-    user = db.query(User).filter(
-        User.id == user_id
-    ).first()
+    user = db.query(User).filter(User.id == user_id).first()
 
     if not user:
         request.session.clear()
         return RedirectResponse("/login", status_code=303)
 
     if user.role != "admin":
-        raise HTTPException(
-            status_code=403,
-            detail="Access Denied"
-        )
+        raise HTTPException(status_code=403, detail="Access Denied")
+
+    total_students = db.query(User).filter(
+        User.role == "student"
+    ).count()
+
+    students = db.query(User).filter(
+        User.role == "student"
+    ).all()
 
     return templates.TemplateResponse(
         request=request,
         name="admin.html",
-        context={"user": user}
+        context={
+            "user": user,
+            "total_students": total_students,
+            "students": students
+        }
     )
