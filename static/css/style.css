@@ -40,6 +40,16 @@ a {
     text-decoration: none;
 }
 
+a:hover {
+    color: var(--terracotta);
+}
+
+a:focus-visible,
+button:focus-visible {
+    outline: 3px solid rgba(199, 100, 67, 0.45);
+    outline-offset: 3px;
+}
+
 .site-header {
     background: rgba(255, 253, 242, 0.96);
     border-bottom: 1px solid var(--border);
@@ -358,6 +368,29 @@ a {
     box-shadow: 0 0 0 3px rgba(199, 100, 67, 0.10);
 }
 
+.form-group input[type="file"] {
+    height: auto;
+    min-height: 50px;
+    padding: 8px;
+    cursor: pointer;
+}
+
+.form-group input[type="file"]::file-selector-button {
+    margin-right: 12px;
+    padding: 9px 12px;
+    border: 0;
+    border-radius: 3px;
+    color: var(--cream);
+    background: var(--charcoal);
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.form-group input[type="file"]::file-selector-button:hover {
+    background: var(--terracotta);
+}
+
 .auth-form .button {
     margin-top: 5px;
     border: 0;
@@ -498,6 +531,27 @@ a {
     font-family: "Segoe UI", Arial, sans-serif;
 }
 
+.dashboard > .info-card .form-group {
+    grid-template-columns: minmax(110px, 0.35fr) minmax(0, 1fr);
+    align-items: baseline;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+}
+
+.dashboard > .info-card .form-group label {
+    color: var(--muted);
+}
+
+.dashboard > .info-card .form-group p {
+    overflow-wrap: anywhere;
+    color: var(--charcoal);
+}
+
+.dashboard > .info-card > .button {
+    margin-top: 22px;
+}
+
 @media (max-width: 860px) {
     .hero {
         grid-template-columns: 1fr;
@@ -577,6 +631,7 @@ a {
 
     .dashboard-header {
         align-items: flex-start;
+        flex-wrap: wrap;
     }
 
     .dashboard-header .button {
@@ -594,6 +649,15 @@ a {
         width: 58px;
         height: 58px;
         flex-basis: 58px;
+    }
+
+    .dashboard > .info-card {
+        padding: 22px;
+    }
+
+    .dashboard > .info-card .form-group {
+        grid-template-columns: 1fr;
+        gap: 3px;
     }
 }
 
