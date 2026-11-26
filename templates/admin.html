@@ -26,6 +26,12 @@
         </div>
     </div>
 
+    {% if message %}
+        <div class="alert alert-{{ message_type }}" role="status">
+            {{ message }}
+        </div>
+    {% endif %}
+
     <div class="dashboard-grid">
 
         <article class="info-card">
@@ -48,24 +54,37 @@
 
     </div>
 
+    <section class="info-card registered-students" aria-labelledby="registered-students-heading">
+        <h2 id="registered-students-heading">Registered Students</h2>
 
-
-    <div class="info-card" style="margin-top: 25px;">
-
-        <h2>Registered Students</h2>
+        <form class="student-search" action="/admin" method="get">
+            <div class="form-group">
+                <label for="student-search">Search by name or email</label>
+                <input
+                    id="student-search"
+                    type="search"
+                    name="q"
+                    value="{{ search_query }}"
+                    placeholder="Enter a name or email"
+                >
+            </div>
+            <button class="button button-primary" type="submit">Search</button>
+            {% if search_query %}
+                <a class="button button-secondary" href="/admin">Clear</a>
+            {% endif %}
+        </form>
 
         {% if students %}
-
-            <div style="overflow-x: auto;">
-
-                <table>
+            <div class="table-scroll" role="region" aria-label="Registered students" tabindex="0">
+                <table class="student-table">
                     <thead>
                         <tr>
-                            <th>Student ID</th>
-                            <th>Name</th>
-                            <th>Email</th>
-                            <th>Phone</th>
-                            <th>Course</th>
+                            <th scope="col">Student ID</th>
+                            <th scope="col">Name</th>
+                            <th scope="col">Email</th>
+                            <th scope="col">Phone</th>
+                            <th scope="col">Course</th>
+                            <th scope="col">Actions</th>
                         </tr>
                     </thead>
 
@@ -77,22 +96,26 @@
                             <td>{{ student.email }}</td>
                             <td>{{ student.phone }}</td>
                             <td>{{ student.course }}</td>
+                            <td>
+                                <form
+                                    action="/admin/students/{{ student.id }}/delete?q={{ search_query | urlencode }}"
+                                    method="post"
+                                    onsubmit="return confirm('Delete this student? This action cannot be undone.');"
+                                >
+                                    <button class="button button-delete" type="submit">Delete</button>
+                                </form>
+                            </td>
                         </tr>
                         {% endfor %}
                     </tbody>
-
                 </table>
-
             </div>
-
+        {% elif search_query %}
+            <p class="student-empty">No students found.</p>
         {% else %}
-
-            <p>No students registered yet.</p>
-
+            <p class="student-empty">No students registered yet.</p>
         {% endif %}
-
-    </div>
-
+    </section>
 
 </section>
 

@@ -409,6 +409,12 @@ button:focus-visible {
     background: var(--danger-bg);
 }
 
+.alert-success {
+    border-color: #356343;
+    color: #285236;
+    background: #eef7ef;
+}
+
 .auth-switch {
     margin: 22px 0 0;
     color: var(--muted);
@@ -552,6 +558,86 @@ button:focus-visible {
     margin-top: 22px;
 }
 
+.registered-students {
+    margin-top: 24px;
+}
+
+.registered-students > h2:first-child {
+    margin-top: 0;
+}
+
+.student-search {
+    display: flex;
+    align-items: flex-end;
+    gap: 12px;
+    margin: 20px 0 24px;
+    font-family: "Segoe UI", Arial, sans-serif;
+}
+
+.student-search .form-group {
+    flex: 1;
+}
+
+.student-search .button {
+    min-height: 50px;
+    white-space: nowrap;
+}
+
+.table-scroll {
+    overflow-x: auto;
+}
+
+.student-table {
+    width: 100%;
+    min-width: 760px;
+    border-collapse: collapse;
+    font-family: "Segoe UI", Arial, sans-serif;
+    text-align: left;
+}
+
+.student-table th,
+.student-table td {
+    padding: 14px 12px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+}
+
+.student-table th {
+    color: var(--charcoal);
+    background: var(--cream);
+    font-size: 0.82rem;
+    letter-spacing: 0.04em;
+}
+
+.student-table td {
+    color: var(--muted);
+    font-size: 0.9rem;
+}
+
+.student-table td:last-child form {
+    margin: 0;
+}
+
+.button-delete {
+    min-height: 38px;
+    padding: 8px 13px;
+    color: var(--white);
+    background: var(--danger);
+    box-shadow: none;
+}
+
+.button-delete:hover {
+    color: var(--white);
+    background: #76251e;
+}
+
+.student-empty {
+    margin: 0;
+    padding: 18px 0 4px;
+    color: var(--muted);
+    font-family: "Segoe UI", Arial, sans-serif;
+}
+
 @media (max-width: 860px) {
     .hero {
         grid-template-columns: 1fr;
@@ -658,6 +744,15 @@ button:focus-visible {
     .dashboard > .info-card .form-group {
         grid-template-columns: 1fr;
         gap: 3px;
+    }
+
+    .student-search {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .student-search .button {
+        width: 100%;
     }
 }
 

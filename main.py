@@ -7,6 +7,8 @@ from os import getenv
 from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from typing import Annotated
+from sqlalchemy import func, or_
+from urllib.parse import urlencode
 import os
 import uuid
 
@@ -63,6 +65,8 @@ def register_user(
     db=Depends(get_db)
 ):
 
+    email = email.strip().lower()
+
     if len(password) < 8:
         return templates.TemplateResponse(
             request=request,
@@ -73,7 +77,7 @@ def register_user(
         )
 
     existing_user = db.query(User).filter(
-        User.email == email
+        func.lower(User.email) == email
     ).first()
 
     if existing_user:
@@ -232,29 +236,32 @@ def update_profile(
     if user.role != "student":
         raise HTTPException(status_code=403, detail="Access Denied")
 
-    user.name = name
-    user.phone = phone
-    user.course = course
+    previous_image_path = user.profile_image
+    new_image_path = None
 
     if profile_image and profile_image.filename:
 
-        allowed_types = ["image/jpeg", "image/png", "image/webp"]
+        allowed_types = {
+            "image/jpeg": "jpg",
+            "image/png": "png",
+            "image/webp": "webp"
+        }
+        extension = allowed_types.get(profile_image.content_type)
 
-        if profile_image.content_type not in allowed_types:
+        if not extension:
             raise HTTPException(
                 status_code=400,
                 detail="Only JPG, PNG and WEBP images are allowed."
             )
 
-        image_data = profile_image.file.read()
+        max_image_size = 2 * 1024 * 1024
+        image_data = profile_image.file.read(max_image_size + 1)
 
-        if len(image_data) > 2 * 1024 * 1024:
+        if len(image_data) > max_image_size:
             raise HTTPException(
                 status_code=400,
                 detail="Image size must be less than 2 MB."
             )
-
-        extension = profile_image.filename.rsplit(".", 1)[-1].lower()
 
         filename = f"{uuid.uuid4()}.{extension}"
         image_path = os.path.join("static", "uploads", filename)
@@ -262,9 +269,17 @@ def update_profile(
         with open(image_path, "wb") as image_file:
             image_file.write(image_data)
 
-        user.profile_image = f"/static/uploads/{filename}"
+        new_image_path = f"/static/uploads/{filename}"
+        user.profile_image = new_image_path
+
+    user.name = name
+    user.phone = phone
+    user.course = course
 
     db.commit()
+
+    if new_image_path:
+        remove_profile_image(db, previous_image_path)
 
     return RedirectResponse(url="/dashboard", status_code=303)
 
@@ -283,14 +298,40 @@ def logout(request: Request):
     )
 
 
+def remove_profile_image(db, image_url):
+    prefix = "/static/uploads/"
+
+    if not image_url or not image_url.startswith(prefix):
+        return
+
+    filename = image_url[len(prefix):]
+
+    if not filename or os.path.basename(filename) != filename:
+        return
+
+    image_in_use = db.query(User.id).filter(
+        User.profile_image == image_url
+    ).first()
+
+    if image_in_use:
+        return
+
+    upload_directory = os.path.realpath(os.path.join("static", "uploads"))
+    image_path = os.path.join(upload_directory, filename)
+
+    if os.path.islink(image_path):
+        return
+
+    real_image_path = os.path.realpath(image_path)
+    if os.path.commonpath((upload_directory, real_image_path)) != upload_directory:
+        return
+
+    if os.path.isfile(image_path):
+        os.remove(image_path)
 
 
-
-
-
-# Admin dashboard
 @app.get("/admin")
-def admin_page(request: Request, db=Depends(get_db)):
+def admin_page(request: Request, q: str = "", db=Depends(get_db)):
 
     user_id = request.session.get("user_id")
 
@@ -310,9 +351,21 @@ def admin_page(request: Request, db=Depends(get_db)):
         User.role == "student"
     ).count()
 
-    students = db.query(User).filter(
+    search_query = q.strip()
+    student_query = db.query(User).filter(
         User.role == "student"
-    ).all()
+    )
+
+    if search_query:
+        search_pattern = f"%{search_query}%"
+        student_query = student_query.filter(
+            or_(
+                User.name.ilike(search_pattern),
+                User.email.ilike(search_pattern)
+            )
+        )
+
+    students = student_query.order_by(User.id).all()
 
     return templates.TemplateResponse(
         request=request,
@@ -320,6 +373,58 @@ def admin_page(request: Request, db=Depends(get_db)):
         context={
             "user": user,
             "total_students": total_students,
-            "students": students
+            "students": students,
+            "search_query": search_query,
+            "message": request.session.pop("admin_message", None),
+            "message_type": request.session.pop("admin_message_type", None)
         }
     )
+
+
+@app.post("/admin/students/{student_id}/delete")
+def delete_student(
+    student_id: int,
+    request: Request,
+    q: str = "",
+    db=Depends(get_db)
+):
+    user_id = request.session.get("user_id")
+
+    if not user_id:
+        return RedirectResponse("/login", status_code=303)
+
+    admin = db.query(User).filter(User.id == user_id).first()
+
+    if not admin:
+        request.session.clear()
+        return RedirectResponse("/login", status_code=303)
+
+    if admin.role != "admin":
+        raise HTTPException(status_code=403, detail="Access Denied")
+
+    message_type = "error"
+
+    if student_id == admin.id:
+        message = "You cannot delete your own account."
+    else:
+        student = db.query(User).filter(User.id == student_id).first()
+
+        if not student:
+            message = "Student not found."
+        elif student.role != "student":
+            message = "Only student accounts can be deleted."
+        else:
+            profile_image = student.profile_image
+            db.delete(student)
+            db.commit()
+            remove_profile_image(db, profile_image)
+            message = "Student deleted successfully."
+            message_type = "success"
+
+    request.session["admin_message"] = message
+    request.session["admin_message_type"] = message_type
+
+    search_query = q.strip()
+    redirect_url = f"/admin?{urlencode({'q': search_query})}" if search_query else "/admin"
+
+    return RedirectResponse(redirect_url, status_code=303)
